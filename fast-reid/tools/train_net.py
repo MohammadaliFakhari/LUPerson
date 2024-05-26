@@ -21,6 +21,9 @@ def setup(args):
     cfg = get_cfg()
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
+    # cfg.SOLVER.IMS_PER_BATCH = 32
+    cfg.SOLVER.CHECKPOINT_PERIOD = 20
+    # cfg.SOLVER.MAX_ITER = 2
     cfg.freeze()
     default_setup(cfg, args)
     return cfg

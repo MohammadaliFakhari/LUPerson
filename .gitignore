@@ -131,3 +131,23 @@ dmypy.json
 logs
 snapshots
 
+Market1501
+Market1501.zip
+market1501-2
+fast-reid/pre_models/
+fruitshop/
+fast-reid/datasets/fruitshop/bounding_box_test
+fast-reid/datasets/fruitshop/bounding_box_train
+fast-reid/datasets/fruitshop/query
+fast-reid/datasets/iust/bounding_box_test
+fast-reid/datasets/iust/bounding_box_train
+fast-reid/datasets/iust/query
+fast-reid/datasets/market1501-2/bounding_box_test
+fast-reid/datasets/market1501-2/bounding_box_train
+fast-reid/datasets/market1501-2/query
+fast-reid/datasets/market1501/bounding_box_test
+fast-reid/datasets/market1501/bounding_box_train
+fast-reid/datasets/market1501/query
+fast-reid/datasets/market1501/gt_bbox
+fast-reid/datasets/market1501/gt_query
+

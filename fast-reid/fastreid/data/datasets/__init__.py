@@ -33,6 +33,9 @@ from .wildtracker import WildTrackCrop
 from .cuhk_sysu import cuhkSYSU
 from .cmdm import CMDM
 from .lup import LUP
+from .fruitshop import FruitShop
+from .iust import IUST
+from .market15012 import Market15012
 
 # Vehicle re-id datasets
 from .veri import VeRi

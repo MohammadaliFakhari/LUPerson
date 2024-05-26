@@ -19,6 +19,9 @@ NAME_DICT = {
     'duke': ('duke', ), 
     'dukemtmc': ('duke', ), 
     'market': ('market1501', ), 
+    'market2': ('market1501-2', ),
+    'fruitshop': ('fruitshop', ),
+    'iust': ('iust', ),
     'market1501': ('market1501', ), 
     'cuhk': ('cuhk03_np', 'labeled'), 
     'cuhk03': ('cuhk03_np', 'labeled'), 
@@ -113,35 +116,59 @@ class CMDM(ImageDataset):
         for ext in EXTS:
             fpaths.extend(glob(os.path.join(path, ext)))
         fpaths = sorted(fpaths)
-        for fpath in fpaths:
-            fname = os.path.basename(fpath)
-            pid, cid = map(int, pattern.search(fname).groups())
-            if pid == -1: continue
-            if relabel:
-                if pid not in all_pids:
-                    all_pids[pid] = len(all_pids)
-            else:
-                if pid not in all_pids:
-                    all_pids[pid] = pid
-            if cid not in all_cids:
-                all_cids[cid] = cid
-            pid = all_pids[pid]
-            cid -= 1
-            ret.append((fpath, pid, cid))
+        if self.data_name == 'fruitshop' or self.data_name == 'iust':
+            for fpath in fpaths:
+                cid = int(os.path.basename(fpath).split('_')[0][1:])
+                pid = int(os.path.basename(fpath).split('_')[2].removesuffix('.jpeg')[2:])
+                if relabel:
+                    if pid not in all_pids:
+                        all_pids[pid] = len(all_pids)
+                else:
+                    if pid not in all_pids:
+                        all_pids[pid] = pid
+                if cid not in all_cids:
+                    all_cids[cid] = cid
+                pid = all_pids[pid]
+                cid -= 1
+                ret.append((fpath, pid, cid))
+        else:
+            for fpath in fpaths:
+                fname = os.path.basename(fpath)
+                pid, cid = map(int, pattern.search(fname).groups())
+                if pid == -1: continue
+                if relabel:
+                    if pid not in all_pids:
+                        all_pids[pid] = len(all_pids)
+                else:
+                    if pid not in all_pids:
+                        all_pids[pid] = pid
+                if cid not in all_cids:
+                    all_cids[cid] = cid
+                pid = all_pids[pid]
+                cid -= 1
+                ret.append((fpath, pid, cid))
+
         return ret
 
     def process_train_id_mode(self, path, relabel=True):
-        pattern = re.compile(r'([-\d]+)_c(\d+)')
         fpaths = []
         for ext in EXTS:
             fpaths.extend(glob(os.path.join(path, ext)))
         fpaths = sorted(fpaths)
+        
+        if self.data_name == 'fruitshop' or self.data_name == 'iust':
+            pid_container = set()
+            for img_path in fpaths:
+                pid = os.path.basename(img_path).split('_')[2].removesuffix('.jpeg')[2:]
+                pid_container.add(pid)
+        else:
+            pattern = re.compile(r'([-\d]+)_c(\d+)')
 
-        pid_container = set()
-        for fpath in fpaths:
-            pid, _ = map(int, pattern.search(fpath).groups())
-            if pid == -1: continue  # junk images are just ignored
-            pid_container.add(pid)
+            pid_container = set()
+            for fpath in fpaths:
+                pid, _ = map(int, pattern.search(fpath).groups())
+                if pid == -1: continue  # junk images are just ignored
+                pid_container.add(pid)
 
         ids = []
         if os.path.isfile(self.used_id_files):
@@ -159,23 +186,32 @@ class CMDM(ImageDataset):
             ids = sorted(choose_ids)
             with open(self.used_id_files, 'w') as f:
                 for iidd in ids:
-                    f.write(f'{iidd:d} \n')
+                    f.write(f'{int(iidd):d} \n')
             print(f"Saving split info to {self.used_id_files}")
 
         pid2label = {pid: label for label, pid in enumerate(ids)}
         all_pids, all_cids = [], []
 
         dataset = []
-        for fpath in fpaths:
-            pid, camid = map(int, pattern.search(fpath).groups())
-            if pid == -1: continue  # junk images are just ignored
-            camid -= 1  # index starts from 0
-            if not pid in ids: continue
-            if relabel: pid = pid2label[pid]
-            if not pid in all_pids: all_pids.append(pid)
-            if not camid in all_cids: all_cids.append(camid)
-            dataset.append((fpath, pid, camid))
-
+        if self.data_name == 'fruitshop' or self.data_name == 'iust':
+            for fpath in fpaths:
+                camid = int(os.path.basename(fpath).split('_')[0][1:])
+                pid = int(os.path.basename(fpath).split('_')[2].removesuffix('.jpeg')[2:])
+                if not pid in ids: continue
+                if relabel: pid = pid2label[pid]
+                if not pid in all_pids: all_pids.append(pid)
+                if not camid in all_cids: all_cids.append(camid)
+                dataset.append((fpath, pid, camid))
+        else:
+            for fpath in fpaths:
+                pid, camid = map(int, pattern.search(fpath).groups())
+                if pid == -1: continue  # junk images are just ignored
+                camid -= 1  # index starts from 0
+                if not pid in ids: continue
+                if relabel: pid = pid2label[pid]
+                if not pid in all_pids: all_pids.append(pid)
+                if not camid in all_cids: all_cids.append(camid)
+                dataset.append((fpath, pid, camid))
         return sorted(dataset)
 
     def process_train_im_mode(self, path, relabel=True):
